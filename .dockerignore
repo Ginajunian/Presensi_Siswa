@@ -11,5 +11,4 @@ storage/app/public/*
 .env.example
 tests
 README.md
-docker
 *.md
