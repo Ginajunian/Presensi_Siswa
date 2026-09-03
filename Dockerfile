@@ -22,6 +22,7 @@ FROM php:8.3-cli
 
 # Install dependency sistem dan ekstensi PHP
 RUN apt-get update && apt-get install -y \
+    default-mysql-client \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \

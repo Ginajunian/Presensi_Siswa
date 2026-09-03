@@ -5,9 +5,49 @@ echo "========================================"
 echo "Starting Laravel application"
 echo "========================================"
 
+PORT=${PORT:-8080}
+
 echo "Preparing database..."
 
-php artisan migrate --force
+if [ -z "$MYSQLHOST" ]; then
+    echo "ERROR: MYSQLHOST belum tersedia."
+    exit 1
+fi
+
+if [ -z "$MYSQLUSER" ]; then
+    echo "ERROR: MYSQLUSER belum tersedia."
+    exit 1
+fi
+
+if [ -z "$MYSQLPASSWORD" ]; then
+    echo "ERROR: MYSQLPASSWORD belum tersedia."
+    exit 1
+fi
+
+if [ -z "$MYSQLDATABASE" ]; then
+    echo "ERROR: MYSQLDATABASE belum tersedia."
+    exit 1
+fi
+
+echo "MySQL Host: $MYSQLHOST"
+echo "MySQL Port: ${MYSQLPORT:-3306}"
+echo "MySQL Database: $MYSQLDATABASE"
+
+echo "Waiting for MySQL..."
+
+until mysql \
+    -h "$MYSQLHOST" \
+    -P "${MYSQLPORT:-3306}" \
+    -u "$MYSQLUSER" \
+    -p"$MYSQLPASSWORD" \
+    -e "SELECT 1;" \
+    "$MYSQLDATABASE" >/dev/null 2>&1
+do
+    echo "MySQL belum siap, menunggu..."
+    sleep 3
+done
+
+echo "MySQL sudah siap."
 
 echo "Preparing storage..."
 
@@ -22,8 +62,6 @@ php artisan view:cache
 echo "========================================"
 echo "Starting Laravel server"
 echo "========================================"
-
-PORT=${PORT:-8080}
 
 exec php artisan serve \
     --host=0.0.0.0 \
