@@ -1,48 +1,103 @@
-# ---------- Stage 1: build asset frontend (Vite) ----------
+# ============================================================
+# Stage 1: Build frontend menggunakan Vite
+# ============================================================
 FROM node:20-alpine AS node-build
+
 WORKDIR /app
+
 COPY package*.json ./
 RUN npm install
-COPY resources resources
+
+COPY resources ./resources
 COPY vite.config.js ./
-COPY public public
+COPY public ./public
+
 RUN npm run build
 
-# ---------- Stage 2: aplikasi PHP produksi ----------
+
+# ============================================================
+# Stage 2: Laravel + PHP + Apache
+# ============================================================
 FROM php:8.3-apache
 
-# Install ekstensi sistem & PHP yang dibutuhkan aplikasi
+# Install dependency sistem dan ekstensi PHP
 RUN apt-get update && apt-get install -y \
-    libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev libonig-dev unzip git \
+    libpng-dev \
+    libjpeg62-turbo-dev \
+    libfreetype6-dev \
+    libzip-dev \
+    libonig-dev \
+    unzip \
+    git \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo_mysql mbstring zip exif bcmath \
+    && docker-php-ext-install \
+        gd \
+        pdo_mysql \
+        mbstring \
+        zip \
+        exif \
+        bcmath \
+    && a2dismod mpm_event mpm_worker || true \
+    && a2enmod mpm_prefork \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy Composer dari image resminya (bukan install manual)
+
+# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+
+# Folder aplikasi
 WORKDIR /var/www/html
 
-# Copy seluruh source code aplikasi
+
+# Copy source Laravel
 COPY . .
 
-# Copy hasil build asset Vite dari stage 1
-COPY --from=node-build /app/public/build public/build
 
-# Install dependency PHP untuk produksi (tanpa paket dev/testing)
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Copy hasil build Vite
+COPY --from=node-build /app/public/build ./public/build
 
-# Arahkan DocumentRoot Apache ke folder public/ (cara resmi dari image php:apache)
+
+# Install dependency Laravel
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction
+
+
+# ============================================================
+# Apache → Laravel public/
+# ============================================================
 ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-RUN sed -ri -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf
-RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
-# Set kepemilikan folder yang perlu ditulis Laravel saat runtime
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+RUN sed -ri \
+    -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+    /etc/apache2/sites-available/000-default.conf
 
+RUN sed -ri \
+    -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
+    /etc/apache2/sites-available/default-ssl.conf
+
+
+# Enable Apache rewrite
+RUN a2enmod rewrite
+
+
+# Permission Laravel
+RUN chown -R www-data:www-data \
+    storage \
+    bootstrap/cache \
+    && chmod -R 775 \
+    storage \
+    bootstrap/cache
+
+
+# Entrypoint Railway
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
+
 EXPOSE 80
+
 ENTRYPOINT ["entrypoint.sh"]
