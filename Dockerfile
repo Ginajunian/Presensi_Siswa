@@ -16,9 +16,9 @@ RUN npm run build
 
 
 # ============================================================
-# Stage 2: Laravel + PHP + Apache
+# Stage 2: Laravel PHP
 # ============================================================
-FROM php:8.3-apache
+FROM php:8.3-cli
 
 # Install dependency sistem dan ekstensi PHP
 RUN apt-get update && apt-get install -y \
@@ -29,7 +29,9 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     unzip \
     git \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-configure gd \
+        --with-freetype \
+        --with-jpeg \
     && docker-php-ext-install \
         gd \
         pdo_mysql \
@@ -63,19 +65,6 @@ RUN composer install \
     --no-interaction
 
 
-# ============================================================
-# Apache → Laravel public/
-# ============================================================
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
-RUN sed -ri \
-    -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/sites-available/000-default.conf
-
-# Aktifkan mod_rewrite untuk Laravel
-RUN a2enmod rewrite
-
-
 # Permission Laravel
 RUN chown -R www-data:www-data \
     storage \
@@ -91,6 +80,7 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 
-EXPOSE 80
+# Railway menggunakan PORT
+EXPOSE 8080
 
 ENTRYPOINT ["entrypoint.sh"]
