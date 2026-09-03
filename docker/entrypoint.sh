@@ -1,22 +1,23 @@
 #!/bin/bash
 set -e
 
-# Railway kasih tau nomor port lewat variabel PORT (beda-beda tiap deploy),
-# kita "suntikkan" nomor itu ke konfigurasi Apache saat container baru nyala.
+# Railway memberikan PORT melalui environment variable
 PORT=${PORT:-80}
+
+# Sesuaikan Apache dengan PORT Railway
 sed -i "s/Listen 80/Listen ${PORT}/" /etc/apache2/ports.conf
 sed -i "s/:80>/:${PORT}>/" /etc/apache2/sites-available/*.conf
 
-# Jalankan migrasi database (aman dijalankan berulang kali setiap deploy —
-# Laravel otomatis skip migration yang sudah pernah dijalankan sebelumnya)
+# Jalankan migration
 php artisan migrate --force
 
-# Pastikan symlink storage (foto siswa, dll) selalu ada
-php artisan storage:link || true
+# Buat/update symbolic link storage
+php artisan storage:link --force
 
-# Cache konfigurasi & route untuk performa produksi
+# Cache Laravel
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Jalankan Apache
 exec apache2-foreground

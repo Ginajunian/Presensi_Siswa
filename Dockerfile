@@ -1,5 +1,5 @@
 # ============================================================
-# Stage 1: Build frontend menggunakan Vite
+# Stage 1: Build frontend
 # ============================================================
 FROM node:20-alpine AS node-build
 
@@ -37,8 +37,6 @@ RUN apt-get update && apt-get install -y \
         zip \
         exif \
         bcmath \
-    && a2dismod mpm_event mpm_worker || true \
-    && a2enmod mpm_prefork \
     && rm -rf /var/lib/apt/lists/*
 
 
@@ -74,12 +72,7 @@ RUN sed -ri \
     -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
     /etc/apache2/sites-available/000-default.conf
 
-RUN sed -ri \
-    -e 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' \
-    /etc/apache2/sites-available/default-ssl.conf
-
-
-# Enable Apache rewrite
+# Aktifkan mod_rewrite untuk Laravel
 RUN a2enmod rewrite
 
 
@@ -92,7 +85,7 @@ RUN chown -R www-data:www-data \
     bootstrap/cache
 
 
-# Entrypoint Railway
+# Entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
