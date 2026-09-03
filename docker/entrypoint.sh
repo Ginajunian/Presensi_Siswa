@@ -18,6 +18,7 @@ grep -R "LoadModule mpm_" /etc/apache2 2>/dev/null || true
 echo "===== AKHIR CEK MPM ====="
 
 php artisan migrate --force
+
 php artisan storage:link --force || true
 
 php artisan config:cache
