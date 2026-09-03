@@ -29,25 +29,60 @@ if [ -z "$MYSQLDATABASE" ]; then
     exit 1
 fi
 
+MYSQL_CMD="mysql --skip-ssl -h $MYSQLHOST -P ${MYSQLPORT:-3306} -u $MYSQLUSER -p$MYSQLPASSWORD"
+
 echo "MySQL Host: $MYSQLHOST"
 echo "MySQL Port: ${MYSQLPORT:-3306}"
 echo "MySQL Database: $MYSQLDATABASE"
 
-echo "Waiting for MySQL..."
-
 echo "Testing koneksi MySQL..."
 
-mysql \
-    --skip-ssl \
-    -h "$MYSQLHOST" \
-    -P "${MYSQLPORT:-3306}" \
-    -u "$MYSQLUSER" \
-    -p"$MYSQLPASSWORD" \
-    -e "SELECT 1;" "$MYSQLDATABASE"
+$MYSQL_CMD -e "SELECT 1;" "$MYSQLDATABASE"
 
 echo "Koneksi MySQL berhasil."
 
-echo "MySQL sudah siap."
+# ============================================================
+# IMPORT DATABASE LOKAL
+# ============================================================
+
+echo "========================================"
+echo "Mengimpor database presensi_siswa.sql"
+echo "========================================"
+
+if [ -f "/var/www/html/presensi_siswa.sql" ]; then
+
+    echo "Menghapus tabel lama..."
+
+    $MYSQL_CMD -N -e "
+    SELECT CONCAT('DROP TABLE IF EXISTS \`', table_name, '\`;')
+    FROM information_schema.tables
+    WHERE table_schema = '$MYSQLDATABASE';
+    " "$MYSQLDATABASE" > /tmp/drop_tables.sql
+
+    (
+        echo "SET FOREIGN_KEY_CHECKS=0;"
+        cat /tmp/drop_tables.sql
+        echo "SET FOREIGN_KEY_CHECKS=1;"
+    ) > /tmp/reset_database.sql
+
+    $MYSQL_CMD "$MYSQLDATABASE" < /tmp/reset_database.sql
+
+    echo "Tabel lama berhasil dihapus."
+
+    echo "Import database lokal..."
+
+    $MYSQL_CMD "$MYSQLDATABASE" < /var/www/html/presensi_siswa.sql
+
+    echo "========================================"
+    echo "IMPORT DATABASE BERHASIL"
+    echo "========================================"
+
+else
+
+    echo "ERROR: presensi_siswa.sql tidak ditemukan."
+    exit 1
+
+fi
 
 echo "Preparing storage..."
 
