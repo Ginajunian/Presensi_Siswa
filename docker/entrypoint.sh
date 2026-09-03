@@ -35,17 +35,16 @@ echo "MySQL Database: $MYSQLDATABASE"
 
 echo "Waiting for MySQL..."
 
-until mysql \
+echo "Testing koneksi MySQL..."
+
+mysql \
     -h "$MYSQLHOST" \
     -P "${MYSQLPORT:-3306}" \
     -u "$MYSQLUSER" \
     -p"$MYSQLPASSWORD" \
-    -e "SELECT 1;" \
-    "$MYSQLDATABASE" >/dev/null 2>&1
-do
-    echo "MySQL belum siap, menunggu..."
-    sleep 3
-done
+    -e "SELECT 1;" "$MYSQLDATABASE"
+
+echo "Koneksi MySQL berhasil."
 
 echo "MySQL sudah siap."
 
