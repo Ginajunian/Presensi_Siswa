@@ -38,6 +38,7 @@ echo "Waiting for MySQL..."
 echo "Testing koneksi MySQL..."
 
 mysql \
+    --skip-ssl \
     -h "$MYSQLHOST" \
     -P "${MYSQLPORT:-3306}" \
     -u "$MYSQLUSER" \
