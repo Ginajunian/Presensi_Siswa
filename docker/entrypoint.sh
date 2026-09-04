@@ -97,6 +97,10 @@ echo "Preparing storage..."
 
 php artisan storage:link --force || true
 
+echo "Running database migrations..."
+
+php artisan migrate --force
+
 echo "Caching Laravel configuration..."
 
 php artisan config:cache
