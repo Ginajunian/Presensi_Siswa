@@ -44,6 +44,16 @@ RUN apt-get update && apt-get install -y \
         bcmath \
     && rm -rf /var/lib/apt/lists/*
 
+# Tuning pool PHP-FPM untuk production
+RUN { \
+    echo '[www]'; \
+    echo 'pm = dynamic'; \
+    echo 'pm.max_children = 20'; \
+    echo 'pm.start_servers = 4'; \
+    echo 'pm.min_spare_servers = 2'; \
+    echo 'pm.max_spare_servers = 6'; \
+} > /usr/local/etc/php-fpm.d/zz-pool-tuning.conf
+
     # Tuning OPcache untuk production
 RUN { \
     echo 'opcache.validate_timestamps=0'; \
