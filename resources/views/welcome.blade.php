@@ -54,7 +54,7 @@
     <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-gray-100">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <img src="{{ asset('img/logo_MTs.png') }}" alt="Logo"
+                <img src="{{ asset('img/Logo_MTs.png') }}" alt="Logo"
                     style="width: 40px; height: auto; margin-right: 10px; bg-white rounded-full;">
                 <span class="font-semibold text-gray-800">{{ config('app.name', 'Presensi Siswa') }}</span>
             </div>
