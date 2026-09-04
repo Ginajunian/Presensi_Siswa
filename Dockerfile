@@ -44,6 +44,12 @@ RUN apt-get update && apt-get install -y \
         bcmath \
     && rm -rf /var/lib/apt/lists/*
 
+    # Tuning OPcache untuk production
+RUN { \
+    echo 'opcache.validate_timestamps=0'; \
+    echo 'opcache.max_accelerated_files=20000'; \
+    echo 'opcache.memory_consumption=192'; \
+} > /usr/local/etc/php/conf.d/opcache-recommended.ini
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer

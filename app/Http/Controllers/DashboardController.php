@@ -57,13 +57,20 @@ class DashboardController extends Controller
             ->with('siswa')
             ->get();
 
-        $tren = collect(range(6, 0))->map(function ($i) use ($kelasIds, $totalSiswaAktif) {
-            $tgl = Carbon::today()->subDays($i);
+        $awal7Hari = Carbon::today()->subDays(6)->toDateString();
+        $akhir7Hari = Carbon::today()->toDateString();
 
-            $hadir = Presensi::where('tanggal', $tgl->toDateString())
-                ->whereIn('status', ['hadir', 'terlambat'])
-                ->whereHas('siswa', fn($q) => $q->whereIn('kelas_id', $kelasIds))
-                ->count();
+        $rekapPerHari = Presensi::whereIn('status', ['hadir', 'terlambat'])
+            ->whereBetween('tanggal', [$awal7Hari, $akhir7Hari])
+            ->whereHas('siswa', fn($q) => $q->whereIn('kelas_id', $kelasIds))
+            ->selectRaw('tanggal, count(*) as total')
+            ->groupBy('tanggal')
+            ->get()
+            ->keyBy(fn($row) => Carbon::parse($row->tanggal)->toDateString());
+
+        $tren = collect(range(6, 0))->map(function ($i) use ($rekapPerHari, $totalSiswaAktif) {
+            $tgl = Carbon::today()->subDays($i);
+            $hadir = optional($rekapPerHari->get($tgl->toDateString()))->total ?? 0;
 
             return [
                 'label' => $tgl->translatedFormat('d M'),
