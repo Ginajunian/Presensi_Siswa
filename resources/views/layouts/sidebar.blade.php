@@ -2,7 +2,7 @@
     class="fixed inset-y-0 left-0 z-40 w-64 bg-brand-700 border-r border-gray-100 transition-transform duration-200 ease-in-out sm:!translate-x-0"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'">
     <div class="h-16 flex items-center gap-2 px-6 bg-brand-700">
-        <img src="{{ asset('public/img/logo_MTs.png') }}" alt="Logo"
+        <img src="{{ asset('img/:Logo_MTs.png') }}" alt="Logo"
             style="width: 40px; height: auto; margin-right: 10px; bg-white rounded-full;">
         <span class="font-bold text-white">{{ config('app.name', 'Presensi Siswa') }}</span>
     </div>
