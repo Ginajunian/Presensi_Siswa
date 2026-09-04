@@ -16,11 +16,11 @@ RUN npm run build
 
 
 # ============================================================
-# Stage 2: Laravel PHP
+# Stage 2: Laravel PHP (PHP-FPM + Nginx)
 # ============================================================
-FROM php:8.3-cli
+FROM php:8.3-fpm
 
-# Install dependency sistem dan ekstensi PHP
+# Install dependency sistem, nginx, dan ekstensi PHP
 RUN apt-get update && apt-get install -y \
     default-mysql-client \
     libpng-dev \
@@ -30,6 +30,8 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     unzip \
     git \
+    nginx \
+    gettext-base \
     && docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
@@ -75,13 +77,17 @@ RUN chown -R www-data:www-data \
     bootstrap/cache
 
 
+# Konfigurasi Nginx (template — port diisi saat container start, karena Railway assign port dinamis)
+COPY docker/nginx.conf.template /etc/nginx/conf.d/laravel.conf.template
+RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf 2>/dev/null || true
+
+
 # Entrypoint
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 
-# Railway menggunakan PORT
 EXPOSE 8080
 
 ENTRYPOINT ["entrypoint.sh"]

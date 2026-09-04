@@ -5,7 +5,7 @@ echo "========================================"
 echo "Starting Laravel application"
 echo "========================================"
 
-PORT=${PORT:-8080}
+export PORT=${PORT:-8080}
 
 echo "Preparing database..."
 
@@ -103,10 +103,15 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+echo "Preparing nginx configuration for port ${PORT}..."
+
+envsubst '$PORT' < /etc/nginx/conf.d/laravel.conf.template > /etc/nginx/conf.d/laravel.conf
+nginx -t
+
 echo "========================================"
-echo "Starting Laravel server"
+echo "Starting PHP-FPM and Nginx"
 echo "========================================"
 
-exec php artisan serve \
-    --host=0.0.0.0 \
-    --port=${PORT}
+php-fpm -D
+
+exec nginx -g "daemon off;"
