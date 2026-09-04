@@ -71,4 +71,33 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('laporan/bulanan/excel', [LaporanController::class, 'bulananExcel'])->name('laporan.bulanan.excel');
 });
 
+// Route::get('/debug-timing', function () {
+//     $hasil = [];
+
+//     $t0 = microtime(true);
+//     \DB::connection()->getPdo();
+//     $hasil['1_koneksi_database'] = round((microtime(true) - $t0) * 1000) . ' ms';
+
+//     $t1 = microtime(true);
+//     \DB::select('SELECT 1');
+//     $hasil['2_query_sederhana'] = round((microtime(true) - $t1) * 1000) . ' ms';
+
+//     $t2 = microtime(true);
+//     \App\Models\Siswa::count();
+//     $hasil['3_query_count_siswa'] = round((microtime(true) - $t2) * 1000) . ' ms';
+
+//     $t3 = microtime(true);
+//     \App\Models\Presensi::where('tanggal', now()->toDateString())->count();
+//     $hasil['4_query_presensi_hari_ini'] = round((microtime(true) - $t3) * 1000) . ' ms';
+
+//     $t4 = microtime(true);
+//     $indexAda = \DB::select("SHOW INDEX FROM presensi WHERE Key_name = 'presensi_tanggal_status_index'");
+//     $hasil['5_cek_index'] = count($indexAda) > 0 ? 'ADA' : 'TIDAK ADA';
+//     $hasil['5_waktu_cek_index'] = round((microtime(true) - $t4) * 1000) . ' ms';
+
+//     $hasil['total_waktu_eksekusi'] = round((microtime(true) - $t0) * 1000) . ' ms';
+
+//     return response()->json($hasil);
+// });
+
 require __DIR__ . '/auth.php';
