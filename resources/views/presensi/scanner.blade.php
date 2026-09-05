@@ -7,7 +7,7 @@
 
         <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
 
-            <x-card>
+            <x-card class="mb-4">
                 <div class="flex justify-between items-center mb-3">
                     <p class="text-sm text-gray-500">Arahkan kamera ke QR Code siswa.</p>
                     <button id="btn-toggle-kamera"
@@ -220,23 +220,6 @@
 
             document.getElementById('btn-toggle-kamera').addEventListener('click', () => {
                 kameraAktif ? hentikanKamera() : mulaiKamera();
-            });
-
-            // --- Input manual (fallback) ---
-
-            document.getElementById('btn-scan-manual').addEventListener('click', () => {
-                const input = document.getElementById('qr-input');
-                if (input.value.trim() === '') return;
-                prosesScan(input.value.trim());
-                input.value = '';
-                input.focus();
-            });
-
-            document.getElementById('qr-input').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    document.getElementById('btn-scan-manual').click();
-                }
             });
 
             // --- Tandai manual langsung dari list (Izin/Sakit/Alpa) ---
